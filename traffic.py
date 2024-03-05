@@ -5,9 +5,9 @@ import argparse
 
 parser = argparse.ArgumentParser(description="Generate traffic through SDN")
 parser.add_argument("dst", type=str, help="ip of destination")
-parser.add_argument("size", type=str, help="packet size")
-parser.add_argument("freq", type=str, help="packet frequency")
-parser.add_argument("duration", type=str, help="duration of the program")
+parser.add_argument("-s", "--size", default=1000, help="packet size (default 1000)")
+parser.add_argument("-f", "--freq", default=2, help="packet frequency (default 2)")
+parser.add_argument("-d", "--duration", default=10, help="duration of the program in seconds (default 10s)")
 args = parser.parse_args()
 
 server_ip = args.dst

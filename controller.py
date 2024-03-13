@@ -7,18 +7,17 @@ from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
 
-class TrafficSlicing(app_manager.RyuApp):
+class Controller(app_manager.RyuApp):
 
     # Specifies the supported OpenFlow version. In this case only 1.3
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
     def __init__(self, *args, **kwargs):
-        super(TrafficSlicing, self).__init__(*args, **kwargs)
+        super(Controller, self).__init__(*args, **kwargs)
 
         # dictionary to store the MAC address of the hosts connected to each switch 
         # TODO: select topology and implement the mac_to_port dictionary
         self.mac_to_port = {}
-
 
 
     # define switch features handler 
@@ -34,7 +33,7 @@ class TrafficSlicing(app_manager.RyuApp):
 
         # send all packets to controller
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
-        self.__add_flow(datapath, 0, match, actions)
+        self.add_flow(datapath, 0, match, actions)
 
     # define add flow method
     def add_flow(self, datapath, priority, match, actions):
@@ -61,7 +60,7 @@ class TrafficSlicing(app_manager.RyuApp):
 
         data = None
         # if message has no buffer id, then assign the data to the message
-        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
+        if msg.buffer_id == datapath.ofproto.OFP_NO_BUFFER:
             data = msg.data
 
         out = datapath.ofproto_parser.OFPPacketOut(

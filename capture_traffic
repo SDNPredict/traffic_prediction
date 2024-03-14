@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Specify topology 
+TOPO=$1
+
+# start the controller
+ryu-manager test_controller.py &
+disown %ryu-manager
+
+# start the mininet
+sudo mn --custom ./topology.py --topo $TOPO --controller=remote,ip=127.0.0.1,port=6633
+
+if [ $TOPO == "Test" ] 
+then
+    tcpdump -i s1-eth1 -w s1-eth1.txt &
+    tcpdump -i s1-eth2 -w s1-eth2.txt &
+fi

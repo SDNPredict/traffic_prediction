@@ -26,12 +26,12 @@ def generate_traffic_size(delta):
 
 
 def generate_traffic(t):
-    sin_value = abs(math.sin(frequency * t))
+    sin_value = abs(math.sin(2 * math.pi * t / frequency))
 
     time.sleep(sin_value)
     print(sin_value)
 
-    packet = IP(dst=server_ip)/of.TCP()
+    packet = IP(dst=server_ip)/ICMP()
     # /Raw(load=b"*" * base_packet_size)
     return packet
  

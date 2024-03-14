@@ -1,5 +1,15 @@
 from mininet.topo import Topo
+from mininet.net import Mininet
+from mininet.node import OVSKernelSwitch, RemoteController
+from mininet.cli import CLI
 from mininet.link import TCLink
+
+from os import system
+from os.path import join
+import json
+import socket
+import subprocess
+
 
 class TestTopology(Topo):
 
@@ -42,3 +52,51 @@ topos = {
     'Test': (lambda: TestTopology()),
     'Custom': (lambda: CustomTopology())
 }
+
+
+def start(controller: RemoteController = None):
+
+    global CURRENT_SCENARIO
+
+    system("clear")
+
+    # Create control if it's None
+    if controller == None:
+        controller = RemoteController("c1", "127.0.0.1", 6633)
+
+    # Create Mininet object
+    print("[INFO] Creating Mininet object")
+
+
+    net = Mininet(
+        topo=TestTopology(),
+        switch=OVSKernelSwitch,
+        controller=controller,
+        build=False,
+        autoSetMacs=True,
+        autoStaticArp=True,
+        link=TCLink,
+    )
+
+    # Build
+    print("[INFO] Building")
+    net.build()
+
+    # Start
+    print("[INFO] Starting")
+    net.start()
+
+    system("clear")
+
+    if __name__ == "__main__":
+        # For debug
+        CLI(net)
+
+    # Stop
+    net.stop()
+
+    # Clear
+    system("sudo mn -c && clear")
+
+if __name__ == "__main__":
+    start() # For debug

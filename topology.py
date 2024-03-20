@@ -10,6 +10,7 @@ from os.path import join
 import json
 import socket
 import subprocess
+import time
 
 
 class TestTopology(Topo):
@@ -20,7 +21,7 @@ class TestTopology(Topo):
 
         # connect n hosts to the switch
         hosts = []
-        for h in range(0, 2):
+        for h in range(0, 4):
             hosts.append(self.addHost("h{}".format(h+1), mac='00:00:00:00:00:0{}'.format(h+1)))
             self.addLink(s1, hosts[h], cls=TCLink, bw=40, delay='15ms')
 
@@ -55,15 +56,14 @@ topos = {
 }
 
 
-def start(controller: RemoteController = None):
+def start():
 
     global CURRENT_SCENARIO
 
     system("clear")
 
     # Create control if it's None
-    if controller == None:
-        controller = RemoteController("c1", "127.0.0.1", 6633)
+    controller = RemoteController("c1", "127.0.0.1", 6633)
 
     # Create Mininet object
     print("[INFO] Creating Mininet object")
@@ -91,7 +91,7 @@ def start(controller: RemoteController = None):
     system("clear")
 
     if __name__ == "__main__":
-        CLI(net, script='pcap_traffic.sh')
+        CLI(net, script='./pcap_traffic.sh')
         # For debug
         CLI(net)
 

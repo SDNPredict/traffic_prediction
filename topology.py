@@ -86,12 +86,18 @@ def start():
     # Start
     print("[INFO] Starting")
     net.start()
-    time.sleep(5)
 
+    time.sleep(3)
+    # The startup script for tcpdump should go here, so the network is instantiated 
+    # and tcpdump can start listening and dumping the packets
+    system("./tcpdump_script.sh")
+
+    time.sleep(5)
     system("clear")
 
     if __name__ == "__main__":
         CLI(net, script='./pcap_traffic.sh')
+
         # For debug
         CLI(net)
 

@@ -3,6 +3,7 @@ from mininet.net import Mininet
 from mininet.node import OVSKernelSwitch, RemoteController
 from mininet.cli import CLI
 from mininet.link import TCLink
+from mininet.log import setLogLevel, info
 
 from os import system
 from os.path import join
@@ -85,10 +86,12 @@ def start(controller: RemoteController = None):
     # Start
     print("[INFO] Starting")
     net.start()
+    time.sleep(5)
 
     system("clear")
 
     if __name__ == "__main__":
+        CLI(net, script='pcap_traffic.sh')
         # For debug
         CLI(net)
 
@@ -99,4 +102,5 @@ def start(controller: RemoteController = None):
     system("sudo mn -c && clear")
 
 if __name__ == "__main__":
+    setLogLevel( 'info' )
     start() # For debug

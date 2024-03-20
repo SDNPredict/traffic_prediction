@@ -1,114 +1,132 @@
-from ryu.controller import ofp_event
-from ryu.controller.handler import set_ev_cls
+# Copyright (C) 2011 Nippon Telegraph and Telephone Corporation.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from ryu.base import app_manager
+from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER
+from ryu.controller.handler import set_ev_cls
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import packet
 from ryu.lib.packet import ethernet
 from ryu.lib.packet import ether_types
 
-class Controller(app_manager.RyuApp):
+import time
 
-    # Specifies the supported OpenFlow version. In this case only 1.3
+class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
-    def __init__(self, *args, **kwargs):
-        super(Controller, self).__init__(*args, **kwargs)
+    _HOST_CSVS = {}
+    start_time = time.time()
 
-        # dictionary to store the MAC address of the hosts connected to each switch 
-        # TODO: select topology and implement the mac_to_port dictionary
+    def __init__(self, *args, **kwargs):
+        super(SimpleSwitch13, self).__init__(*args, **kwargs)
         self.mac_to_port = {}
 
-
-    # define switch features handler 
-    # called when the Ryu controller receives a EventOFPSwitchFeatures event from the switch
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
         datapath = ev.msg.datapath
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        # match all packets
+        # install table-miss flow entry
+        #
+        # We specify NO BUFFER to max_len of the output action due to
+        # OVS bug. At this moment, if we specify a lesser number, e.g.,
+        # 128, OVS will send Packet-In with invalid buffer_id and
+        # truncated packet data. In that case, we cannot output packets
+        # correctly.  The bug has been fixed in OVS v2.1.0.
         match = parser.OFPMatch()
-
-        # send all packets to controller
-        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
+        actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
+                                          ofproto.OFPCML_NO_BUFFER)]
         self.add_flow(datapath, 0, match, actions)
 
-    # define add flow method
-    def add_flow(self, datapath, priority, match, actions):
+    def add_flow(self, datapath, priority, match, actions, buffer_id=None):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
 
-        # construct flow_mod message and send it to the switch
-        mod = parser.OFPFlowMod(
-            datapath=datapath, 
-            priority=priority, 
-            match=match, 
-            instructions= [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
-        )
-
-        # send the message to the switch
+        inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS,
+                                             actions)]
+        if buffer_id:
+            mod = parser.OFPFlowMod(datapath=datapath, buffer_id=buffer_id,
+                                    priority=priority, match=match,
+                                    instructions=inst)
+        else:
+            mod = parser.OFPFlowMod(datapath=datapath, priority=priority,
+                                    match=match, instructions=inst)
         datapath.send_msg(mod)
 
-    # send packet to a switch and specify the output port
-    def send_packet(self, msg, datapath, in_port, actions):
-        # msg: message to be sent 
-        # datapath: switch to send the message to
-        # in_port: port where the message is received
-        # actions: list of actions to be performed on the message if flow entry is matched
+    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    def _packet_in_handler(self, ev):
+        # If you hit this you might want to increase
+        # the "miss_send_length" of your switch
+        if ev.msg.msg_len < ev.msg.total_len:
+            self.logger.debug("packet truncated: only %s of %s bytes",
+                              ev.msg.msg_len, ev.msg.total_len)
+        msg = ev.msg
+        datapath = msg.datapath
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        in_port = msg.match['in_port']
 
+        pkt = packet.Packet(msg.data)
+        eth = pkt.get_protocols(ethernet.ethernet)[0]
+
+        if eth.ethertype == ether_types.ETH_TYPE_LLDP:
+            # ignore lldp packet
+            return
+        dst = eth.dst
+        src = eth.src
+
+        dpid = format(datapath.id, "d").zfill(16)
+        self.mac_to_port.setdefault(dpid, {})
+
+        # self.logger.info("packet in %s %s %s %s", dpid, src, dst, in_port)
+
+        # learn a mac address to avoid FLOOD next time.
+        self.mac_to_port[dpid][src] = in_port
+
+        if dst in self.mac_to_port[dpid]:
+            out_port = self.mac_to_port[dpid][dst]
+        else:
+            out_port = ofproto.OFPP_FLOOD
+
+        if src not in self._HOST_CSVS:
+            # Create a new CSV file for the host
+            with open(f"./csvs/host_{src}.csv", "w") as csvfile:
+                csvfile.write("timestamp,src_mac,dst_mac,in_port\n")
+            self._HOST_CSVS[src] = open(f"./csvs/host_{src}.csv", "a")  # Open in append mode
+
+        # Write packet details to the host's CSV file
+        self._HOST_CSVS[src].write(f"{time.time() - self.start_time},{src},{dst},{in_port}\n")
+
+        actions = [parser.OFPActionOutput(out_port)]
+
+        # install a flow to avoid packet_in next time
+        if out_port != ofproto.OFPP_FLOOD:
+            match = parser.OFPMatch(in_port=in_port, eth_dst=dst, eth_src=src)
+            # verify if we have a valid buffer_id, if yes avoid to send both
+            # flow_mod & packet_out
+            if msg.buffer_id != ofproto.OFP_NO_BUFFER:
+                self.add_flow(datapath, 1, match, actions, msg.buffer_id)
+                return
+            else:
+                self.add_flow(datapath, 1, match, actions)
         data = None
-        # if message has no buffer id, then assign the data to the message
-        if msg.buffer_id == datapath.ofproto.OFP_NO_BUFFER:
+        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
             data = msg.data
 
-        out = datapath.ofproto_parser.OFPPacketOut(
-            datapath=datapath,
-            buffer_id=msg.buffer_id,
-            in_port=in_port,
-            actions=actions,
-            data=data
-        )
-
-        # send the message to the switch
+        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id,
+                                  in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
-            
-
-    # function called when the Ryu controller receives a EventOFPPacketIn event from the switch
-    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
-    def packet_in_handler(self, ev):
-        # ev: event received from the switch (EventOFPPacketIn event)
-
-        msg = ev.msg # message received from the switch
-        datapath = msg.datapath # switch that sent the message
-        ofproto = datapath.ofproto # OpenFlow protocol used by the switch
-        parser = datapath.ofproto_parser # OpenFlow protocol parser used by the switch
-        in_port = msg.match['in_port'] # port where the message is received
-
-        # parse the packet
-        pkt = packet.Packet(msg.data)
-        eth = pkt.get_protocol(ethernet.ethernet)
-
-        # if the packet is an LLDP packet
-        if eth.ethertype == ether_types.ETH_TYPE_LLDP:
-            return
-
-        dst = eth.dst # destination MAC address of the packet
-        dpid = datapath.id # datapath id of the switch
-
-        # check if dst is inside the dpid map of the mac_to_port dictionary
-        if dst in self.mac_to_port[dpid]:
-            # output port is the port where the destination MAC address is connected
-            out_port = self.mac_to_port[dpid][dst]
-            # list of actions to be performed on the packet if flow entry is matched
-            actions = [parser.OFPActionOutput(out_port)]
-
-            # construct the match 
-            match = parser.OFPMatch(eth_dst=dst)
-
-            # add flow entry to the switch 
-            self.add_flow(datapath, 1, match, actions)
-
-            # send the packet to the output out_port 
-            self.send_packet(msg, datapath, in_port, actions)

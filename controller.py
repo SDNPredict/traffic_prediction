@@ -27,7 +27,6 @@ import time
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
-    _HOST_CSVS = {}
     start_time = time.time()
 
     def __init__(self, *args, **kwargs):
@@ -101,15 +100,6 @@ class SimpleSwitch13(app_manager.RyuApp):
             out_port = self.mac_to_port[dpid][dst]
         else:
             out_port = ofproto.OFPP_FLOOD
-
-        if src not in self._HOST_CSVS:
-            # Create a new CSV file for the host
-            with open(f"./csvs/host_{src}.csv", "w") as csvfile:
-                csvfile.write("timestamp,src_mac,dst_mac,in_port\n")
-            self._HOST_CSVS[src] = open(f"./csvs/host_{src}.csv", "a")  # Open in append mode
-
-        # Write packet details to the host's CSV file
-        self._HOST_CSVS[src].write(f"{time.time() - self.start_time},{src},{dst},{in_port}\n")
 
         actions = [parser.OFPActionOutput(out_port)]
 

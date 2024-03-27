@@ -11,7 +11,13 @@ import json
 import socket
 import subprocess
 import time
+import argparse
 
+parser = argparse.ArgumentParser(description="Generate traffic with tcp replay or with a traffic that emulate some dsp waves")
+parser.add_argument("-t", "--type", default=1, help="select 1 for select tcpreplay, 2 for dsp waves (default 2)")
+
+args = parser.parse_args()
+type = args.type
 
 class TestTopology(Topo):
 
@@ -61,6 +67,8 @@ def start():
     global CURRENT_SCENARIO
 
     system("clear")
+    
+    system("ryu-manager controller.py &")
 
     # Create control if it's None
     controller = RemoteController("c1", "127.0.0.1", 6633)
@@ -96,7 +104,12 @@ def start():
     system("clear")
 
     if __name__ == "__main__":
-        CLI(net, script='./pcap_traffic.sh')
+        #if type == 1:
+        #    CLI(net, script='./pcap_traffic.sh')
+        #elif type == 2:
+        CLI(net, script='./dsp_traffic.sh')
+        
+        print(type)
 
         # For debug
         CLI(net)

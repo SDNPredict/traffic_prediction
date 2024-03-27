@@ -1,28 +1,21 @@
 from scapy.all import *
-import scapy.contrib.openflow as of 
+import scapy.contrib.openflow as of
 import sys
 import math
 import argparse
 
 parser = argparse.ArgumentParser(description="Generate traffic through SDN")
 parser.add_argument("dst", type=str, help="ip of destination")
-parser.add_argument("-s", "--size", default=1000, help="packet size (default 1000)")
+parser.add_argument("-w", "--wave", type=str, help="type of wave to generate (available options: sine, triangular, sawtooth, square")
 parser.add_argument("-p", "--period", default=2, help="period duration (default 2)")
 parser.add_argument("-d", "--duration", default=10, help="duration of the program in seconds (default 10s)")
 
-parser.add_argument(
 args = parser.parse_args()
-
 server_ip = args.dst
-base_packet_size = int(args.size)
 period = int(args.period)
 duration = int(args.duration)
+wave = args.wave
 
-# def generate_traffic_size(delta): 
-#     amplitude = 5
-#     packet_size = base_packet_size + int(amplitude * math.sin(2 * math.pi * period * delta))
-#     packet = IP(dst=server_ip)/ICMP()/Raw(load=b"*" * packet_size)
-#     return packet
 
 def generate_traffic(t):
     sin_value = abs(math.sin(2 * math.pi * t / period))
@@ -30,17 +23,83 @@ def generate_traffic(t):
         time.sleep(0.05)
         print("0.05")
     else:
-        time.sleep(sin_value) 
+        time.sleep(sin_value)
         print(sin_value)
 
-    packet = IP(dst=server_ip)/ICMP()
-    # /Raw(load=b"*" * base_packet_size)
+    packet = IP(dst=server_ip) / ICMP()
     return packet
- 
-counter = 0
-start_time = time.time()
-while time.time() - start_time < duration:
-    current_time = time.time() - start_time
-    #counter += 1
-    send(generate_traffic(current_time))
 
+def generate_triangular_traffic(t):
+    """
+    This function generates a triangular wave with the given time (t)
+    """
+    amplitude = 1
+    if t < 0:
+        raise ValueError("t must be positive")
+
+    triangular_value = abs((4 * amplitude / period) * abs(((t - (period / 4)) % period) - (period / 2)) - amplitude)
+
+    if triangular_value < 0.05:
+        time.sleep(0.05)
+        print("0.05")
+    else:
+        time.sleep(triangular_value)
+        print(triangular_value)
+
+    packet = IP(dst=server_ip) / ICMP()
+    return packet
+
+def generate_sawtooth_traffic(t):
+    """
+    This function generates a sawtooth wave with the given time (t)
+    """
+    amplitude = 1
+    if t < 0:
+        raise ValueError("Time (t) must be positive")
+
+    sawtooth_value = 2*(t-math.floor(t+0.5)) + amplitude
+
+    if sawtooth_value < 0.05:
+        time.sleep(0.05)
+        print("0.05")
+    else:
+        time.sleep(sawtooth_value)
+        print(sawtooth_value)
+
+    packet = IP(dst=server_ip) / ICMP()
+    return packet
+
+def generate_square_traffic(t):
+    """
+    This function generates a square wave with the given time (t)
+    """
+    amplitude = 1
+    if t < 0:
+        raise ValueError("Time (t) must be positive")
+
+    square_value = 4*math.floor(t)-2*math.floor(2*t)+1
+    
+    if square_value < 0.05:
+        time.sleep(0.05)
+        print("0.05")
+    else:
+        time.sleep(square_value)
+        print(square_value)
+
+    packet = IP(dst=server_ip) / ICMP()
+    return packet
+
+
+if __name__ == "__main__":
+    counter = 0
+    start_time = time.time()
+    while time.time() - start_time < duration:
+        current_time = time.time() - start_time
+        if wave == "sine":
+            send(generate_traffic(current_time))
+        elif wave == "triangular":
+            send(generate_triangular_traffic(current_time))
+        elif wave == "sawtooth":
+            send(generate_sawtooth_traffic(current_time))
+        elif wave == "square":
+            send(generate_square_traffic(current_time))

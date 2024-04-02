@@ -57,11 +57,14 @@ def generate_sawtooth_traffic(t):
     if t < 0:
         raise ValueError("Time (t) must be positive")
 
-    sawtooth_value = 2*(t-math.floor(t+0.5)) + amplitude
+    sawtooth_value = 2*((t/period)-math.floor((t/period)+0.5))
 
-    if sawtooth_value < 0.05:
-        time.sleep(0.05)
-        print("0.05")
+    if sawtooth_value < 0:
+        sawtooth_value = 1 + sawtooth_value
+
+    if sawtooth_value < 0.025:
+        time.sleep(0.025)
+        print(sawtooth_value)
     else:
         time.sleep(sawtooth_value)
         print(sawtooth_value)
@@ -73,22 +76,21 @@ def generate_square_traffic(t):
     """
     This function generates a square wave with the given time (t)
     """
-    amplitude = 1
+    amplitude = 0.5
     if t < 0:
         raise ValueError("Time (t) must be positive")
 
-    square_value = 4*math.floor(t)-2*math.floor(2*t)+1
+    #square_value = 4*math.floor(t)-2*math.floor(2*t)+1
     
+    square_value = amplitude if (t % period) < (period / 2) else 0
+
     if square_value < 0.05:
-        time.sleep(0.05)
-        print("0.05")
+        time.sleep(1)
     else:
         time.sleep(square_value)
         print(square_value)
-
-    packet = IP(dst=server_ip) / ICMP()
-    return packet
-
+        packet = IP(dst=server_ip) / ICMP()
+        return packet
 
 if __name__ == "__main__":
     counter = 0
@@ -102,4 +104,7 @@ if __name__ == "__main__":
         elif wave == "sawtooth":
             send(generate_sawtooth_traffic(current_time))
         elif wave == "square":
-            send(generate_square_traffic(current_time))
+            packet = generate_square_traffic(current_time)
+            if packet is not None:
+                send(packet)
+

@@ -14,7 +14,7 @@ import time
 import argparse
 
 parser = argparse.ArgumentParser(description="Generate traffic with tcp replay or with a traffic that emulate some dsp waves")
-parser.add_argument("-t", "--type", default=1, help="select 1 for select tcpreplay, 2 for dsp waves (default 2)")
+parser.add_argument("-t", "--type", default=1, help="select 0 for tcpreplay, 1 for sine wave, 2 for triangular wave, 3 for sawtooth wave, 4 for square wave, 5 for mixed dsp waves (default 1)")
 
 args = parser.parse_args()
 type = args.type
@@ -104,12 +104,18 @@ def start():
     system("clear")
 
     if __name__ == "__main__":
-        #if type == 1:
-        #    CLI(net, script='./pcap_traffic.sh')
-        #elif type == 2:
-        CLI(net, script='./dsp_traffic.sh')
-        
-        print(type)
+        if type == 0:
+            CLI(net, script='./pcap_traffic.sh')
+        elif type == 1:
+            CLI(net, script='./sine_traffic.sh')
+        elif type == 2:
+            CLI(net, script='./triangular_traffic.sh')
+        elif type == 3:
+            CLI(net, script='./sawtooth_traffic.sh')
+        elif type == 4:
+            CLI(net, script='./square_traffic.sh')
+        elif type == 5:       
+            CLI(net, script='./dsp_traffic.sh')
 
         # For debug
         CLI(net)

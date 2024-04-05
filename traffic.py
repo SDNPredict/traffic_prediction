@@ -76,13 +76,13 @@ def generate_square_traffic(t):
     """
     This function generates a square wave with the given time (t)
     """
-    amplitude = 0.5
+    amplitude = 1
     if t < 0:
         raise ValueError("Time (t) must be positive")
 
     #square_value = 4*math.floor(t)-2*math.floor(2*t)+1
     
-    square_value = amplitude if (t % period) < (period / 2) else 0
+    square_value = amplitude if (t % period) < (period / 2) else 0.1
 
     if square_value < 0.05:
         time.sleep(1)

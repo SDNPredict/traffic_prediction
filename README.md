@@ -35,6 +35,28 @@ Run the Experiment: Follow the instructions provided within the code (or create 
 
 ### Packet Acquisition
 
+To capture the traffic from each host we have decided to use tcpdump, a common tool for computer network debugging and capturing. To intercept the packets we had to insert the network interface related to each host. For example, the virtual network we have tested has a switch twith four ethernet ports, so four network interfaces, one for each host.
+This tool is useful for our purpose because with the flag `-w`, alongside a file name, it generates a pcap file, convenient to be read with software such as wireshark and in this way have a first sight of the traffic.
+
+With the command seen before (`sudo python3 topology.py`), not only the traffic starts to be sended, but also the script `tcpdump_script.sh` execute tcpdump (with the `&` to run the tool in background alongside mininet) and after the simulation, four pcap files are saved into the pc, one for each network interface.
+
+    File: tcpdump_script.sh
+   
+    1   │ #!/bin/bash
+    2   │ 
+    3   │ HOSTS=4
+    4   │ 
+    5   │ for ((i = 1; i <= $HOSTS; i++)); do
+    6   │   echo "starting host_$i"
+    7   │   sudo tcpdump -i s1-eth${i} -w ./dumps/h${i}_traffic.pcap -U &
+    8   │ done
+    9   │ 
+
+ 
+Then, we have read the content of the pcap files with Wireshark and saved using the option `File > Export Packet Dissections > As CSV`.
+We found useful use Wireshark because it allowed us to have a fast sight of the traffic on the various interfaces, even though we have could used python libraries such as `dpkt` to convert `.pcap` files into `.csv`.
+After this passage, when these csv files have been generated, using Python we selected only the first and the second column of the csvs, the ones where are located the numbers of the packets, and their timestamps, and resaved as CSV, in such a way that these files could be read by Prohpet.  
+
 ### Data Elaboration
 
 ### Analysis of the Capture files

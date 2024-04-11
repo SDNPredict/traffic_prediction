@@ -1,3 +1,5 @@
 csvs/*
 dumps/
 __pycache__/
+**/*_prophet_input.csv
+

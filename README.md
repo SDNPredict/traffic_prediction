@@ -58,12 +58,40 @@ We found useful use Wireshark because it allowed us to have a fast sight of the 
 
 After this passage, when these csv files have been generated, using Python we selected only the first and the second column of the csvs, the ones where are located the numbers of the packets, and their timestamps, and resaved as CSV, in such a way that these files could be read by Prophet.    
 
+
 ### Data Elaboration
 
-### Analysis of the Capture files
+The data we supplied to prophet is a csv file with two columns, ds and y. the timestamp and the number of packets associated with that timestamp.
+Prophet could
+
+
+In the case of sinusoidal function
+
+We applied mainly three strategies to preprocess the data:
+- augmentation
+- injection of random noise to make the prediction more difficult
+- time stretching: come verra' spiegato dopo nel dettaglio, Prophet is a tool which is best suitable per una differente metrica temporale, ergo una strategia simile a quella del data augmentation e' quella
+
 
 ### Prediction with Prophet
 
+As the website presents
+
+Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects.
+
+Basically
+
 ### Observations and notes
 
+Generally a real case traffic scenario it is not particularily interesting to analyze because it has no frequency content. Main exceptions could be daily fluctuations.
+
+Traffic prediction in general have its own strong limitations, so that given only a time series as input the expected output can use only that information to generate something. You can effectively predict something meaningful which is not a simple replay of the past (which is basically Prophet) only if you add another type of information.
+
+
+
+
+
+## TODO
+
+- provare a non raggruppare niente ma semplicemente a dare a prophet la lista dei timestamps
 

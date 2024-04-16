@@ -17,9 +17,9 @@ parser = argparse.ArgumentParser(description="Generate traffic with tcp replay o
 parser.add_argument("-t", "--type", default=1, help="select 0 for tcpreplay, 1 for sine wave, 2 for triangular wave, 3 for sawtooth wave, 4 for square wave, 5 for mixed dsp waves (default 1)")
 
 args = parser.parse_args()
-type = args.type
+type = int(args.type)
 
-class TestTopology(Topo):
+class Topology(Topo):
 
     def build(self):
         # Add the central switch
@@ -32,33 +32,34 @@ class TestTopology(Topo):
             self.addLink(s1, hosts[h], cls=TCLink, bw=40, delay='15ms')
 
 
-class CustomTopology(Topo):
+class Enhanced(Topo):
 
     def build(self):
-        # Add the central switch
-        s1 = self.addSwitch('s1')
-
-        # connect n hosts to the switch
         hosts = []
-        for h in range(0, 5):
-            hosts.append(self.addHost("h{}".format(h+1)))
+        s1 = self.addSwitch('s1')
+        for h in range(0, 3):
+            hosts.append(self.addHost("h{}".format(h+1), mac='00:00:00:00:00:0{}'.format(h+1)))
             self.addLink(s1, hosts[h], cls=TCLink, bw=40, delay='15ms')
 
-        # Add the second switch
         s2 = self.addSwitch('s2')
-
-        # connect n hosts to the switch
-        for h in range(5, 10):
-            hosts.append(self.addHost("h{}".format(h+1)))
+        for h in range(3, 7):
+            hosts.append(self.addHost("h{}".format(h+1), mac='00:00:00:00:00:0{}'.format(h+1)))
             self.addLink(s2, hosts[h], cls=TCLink, bw=40, delay='15ms')
 
-        # connect the switches
+        s3 = self.addSwitch('s3')
+        for h in range(7, 10):
+            hosts.append(self.addHost("h{}".format(h+1), mac='00:00:00:00:00:0{}'.format(h+1)))
+            self.addLink(s3, hosts[h], cls=TCLink, bw=40, delay='15ms')
+
+
         self.addLink(s1, s2, cls=TCLink, bw=40, delay='15ms')
+        self.addLink(s1, s3, cls=TCLink, bw=40, delay='15ms')
+        self.addLink(s2, s3, cls=TCLink, bw=40, delay='15ms')         
 
 
 topos = {
-    'Test': (lambda: TestTopology()),
-    'Custom': (lambda: CustomTopology())
+    'Main': (lambda: Topology()),
+    'Enhanced': (lambda: Enhanced())
 }
 
 
@@ -78,7 +79,7 @@ def start():
 
 
     net = Mininet(
-        topo=TestTopology(),
+        topo=Topology(),
         switch=OVSKernelSwitch,
         controller=controller,
         build=False,

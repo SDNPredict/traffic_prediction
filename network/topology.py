@@ -98,24 +98,24 @@ def start():
     time.sleep(3)
     # The startup script for tcpdump should go here, so the network is instantiated 
     # and tcpdump can start listening and dumping the packets
-    system("./tcpdump_script.sh")
+    system("../tcpdump_script.sh")
 
     time.sleep(5)
     system("clear")
 
     if __name__ == "__main__":
         if type == 0:
-            CLI(net, script='./pcap_traffic.sh')
+            CLI(net, script='../traffic/pcap_traffic.sh')
         elif type == 1:
-            CLI(net, script='./sine_traffic.sh')
+            CLI(net, script='../traffic/sine_traffic.sh')
         elif type == 2:
-            CLI(net, script='./triangular_traffic.sh')
+            CLI(net, script='../traffic/triangular_traffic.sh')
         elif type == 3:
-            CLI(net, script='./sawtooth_traffic.sh')
+            CLI(net, script='../traffic/sawtooth_traffic.sh')
         elif type == 4:
-            CLI(net, script='./square_traffic.sh')
+            CLI(net, script='../traffic/square_traffic.sh')
         elif type == 5:       
-            CLI(net, script='./dsp_traffic.sh')
+            CLI(net, script='../traffic/dsp_traffic.sh')
 
         # For debug
         CLI(net)

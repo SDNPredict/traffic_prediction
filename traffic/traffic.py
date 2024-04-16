@@ -3,6 +3,7 @@ import scapy.contrib.openflow as of
 import sys
 import math
 import argparse
+import time
 
 parser = argparse.ArgumentParser(description="Generate traffic through SDN")
 parser.add_argument("dst", type=str, help="ip of destination")

@@ -98,7 +98,7 @@ def start():
     time.sleep(3)
     # The startup script for tcpdump should go here, so the network is instantiated 
     # and tcpdump can start listening and dumping the packets
-    system("../tcpdump_script.sh")
+    system("../traffic/tcpdump_script.sh")
 
     time.sleep(5)
     system("clear")

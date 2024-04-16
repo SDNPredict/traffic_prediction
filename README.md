@@ -33,7 +33,7 @@ See the sections below for the execution methods.
 ### Creation of the topology
 
 In order to create the topology of the network, [Mininet](http://mininet.org/) was used.  
-The file [topology.py](./topology.py) contains the two topologies used for the project, altough the _Test_ topology ended up being the 
+The file [topology.py](./network/topology.py) contains the two topologies used for the project, altough the _Test_ topology ended up being the 
 main one since having more hosts / switches hindered the generation and analysis of the traffic.  
 The execution of the file above via `sudo python3 topology.py` sets the environment by creating a remote _Ryu controller_, `controller = RemoteController("c1", "127.0.0.1", 6633)`, running at the port 6633.  
 Setting the Network up is then done via the creation of a _Mininet object_:
@@ -86,7 +86,7 @@ In order to gain detailed insight into individual host communication, we opted t
 
 This tool is useful for our purpose because with the flag `-w`, alongside a file name, it generates a pcap file, convenient to be read with software such as wireshark and in this way have a first sight of the traffic.  
   
-With the command seen before (`sudo python3 topology.py`), not only the traffic starts to be sent, but also the script [tcpdump_script.sh](./tcpdump_script.sh) executes tcpdump in the background and, after the simulation completes, four pcap files are saved into the pc, one for each network interface.  
+With the command seen before (`sudo python3 topology.py`), not only the traffic starts to be sent, but also the script [tcpdump_script.sh](./traffic/tcpdump_script.sh) executes tcpdump in the background and, after the simulation completes, four pcap files are saved into the pc, one for each network interface.  
 
 ```bash
    #!/bin/bash

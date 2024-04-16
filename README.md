@@ -33,13 +33,13 @@ See the sections below for the execution methods.
 ### Creation of the topology
 
 In order to create the topology of the network, [Mininet](http://mininet.org/) was used.  
-The file [topology.py](./network/topology.py) contains the two topologies used for the project, altough the _Test_ topology ended up being the 
-main one since having more hosts / switches hindered the generation and analysis of the traffic.  
+The file [topology.py](./network/topology.py) contains the topology used for the project.
+During the development of the project we saw that having more hosts / switches hindered the generation and analysis of the traffic.  
 The execution of the file above via `sudo python3 topology.py` sets the environment by creating a remote _Ryu controller_, `controller = RemoteController("c1", "127.0.0.1", 6633)`, running at the port 6633.  
 Setting the Network up is then done via the creation of a _Mininet object_:
 ```
     net = Mininet(
-        topo=TestTopology(),
+        topo=Topology(),
         switch=OVSKernelSwitch,
         controller=controller,
         build=False,
@@ -49,7 +49,7 @@ Setting the Network up is then done via the creation of a _Mininet object_:
     )
 ```
 
-Where _TestTopology_ is the class describing a SDN of four hosts and a central switch.  
+Where _Topology_ is the class describing a SDN of four hosts and a central switch.  
 
 ### Generation of the network traffic
 
@@ -77,6 +77,7 @@ Four types of periodic functions generators have been used:
 - sawtooth  
 - square  
 - triangular  
+- dsp, combination of the above
 
 The files associated with each of them are wrappers around [traffic.py](./traffic/traffic.py), that has different args to customize the period and duration of the different waves.   
 

@@ -25,8 +25,11 @@ Anomaly Detection: Identification of unusual traffic patterns that may indicate 
 ### Getting Started:
 
 Prerequisites: Ensure you have Python and the required libraries (Mininet, Ryu, Prophet) installed on your system. Refer to their respective documentation for installation instructions.  
-Clone the Repository: Use Git to clone this repository to your local machine.  
-See the sections below for the execution methods.
+The simulation works with specific Ubuntu and python packages versions, so [comnetsemu](https://www.granelli-lab.org/researches/relevant-projects/comnetsemu-labs) virtual machine packages all the requirements in a simple `.ova` file.  
+
+Clone the Repository: Use Git to clone this repository to your local machine (or virtual machine).  
+
+See the sections below for the execution methods.  
 
 ## Project Phases
 
@@ -34,7 +37,7 @@ See the sections below for the execution methods.
 
 In order to create the topology of the network, [Mininet](http://mininet.org/) was used.  
 The file [topology.py](./network/topology.py) contains the topology used for the project.
-During the development of the project we saw that having more hosts / switches hindered the generation and analysis of the traffic.  
+During development we saw that having more hosts / switches hindered the generation and analysis of the traffic.  
 The execution of the file above via `sudo python3 topology.py` sets the environment by creating a remote _Ryu controller_, `controller = RemoteController("c1", "127.0.0.1", 6633)`, running at the port 6633.  
 Setting the Network up is then done via the creation of a _Mininet object_:
 ```python
@@ -57,14 +60,14 @@ We decided to generate traffic with two different methods in order to test the c
 - Real traffic data via realistic pcap files.  
 - Periodic functions determining the interval between each packet sent.  
 
-The argument `-t / --type` determines the traffic generation method.  
+When executing `sudo python3 topology.py`, the argument `-t / --type` determines the traffic generation method.  
 
 #### Real traffic
 
 The directory [dataset](./dataset/) contains pcap files for each host.  
 Each host sends packets to the other 3, and other non-existent hosts to simulate real traffic.   
 The following command is executed in the background for each host numbered from i in \[1, 4\]:  
-```
+```bash
 h${i} for file in dataset/h${i}/*.pcap; do tcpreplay --loop=5000 --loopdelay-ms=5000 -i h${i}-eth0 --pps=10 $file & done
 ```
 

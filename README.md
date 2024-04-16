@@ -37,7 +37,7 @@ The file [topology.py](./network/topology.py) contains the topology used for the
 During the development of the project we saw that having more hosts / switches hindered the generation and analysis of the traffic.  
 The execution of the file above via `sudo python3 topology.py` sets the environment by creating a remote _Ryu controller_, `controller = RemoteController("c1", "127.0.0.1", 6633)`, running at the port 6633.  
 Setting the Network up is then done via the creation of a _Mininet object_:
-```
+```python
     net = Mininet(
         topo=Topology(),
         switch=OVSKernelSwitch,

@@ -14,10 +14,10 @@ import time
 import argparse
 
 parser = argparse.ArgumentParser(description="Generate traffic with tcp replay or with a traffic that emulate some dsp waves")
-parser.add_argument("-t", "--type", default=1, help="select 0 for tcpreplay, 1 for sine wave, 2 for triangular wave, 3 for sawtooth wave, 4 for square wave, 5 for mixed dsp waves (default 1)")
+parser.add_argument("-t", "--wave_type", default=1, help="select 0 for tcpreplay, 1 for sine wave, 2 for triangular wave, 3 for sawtooth wave, 4 for square wave, 5 for mixed dsp waves (default 1)")
 
 args = parser.parse_args()
-type = int(args.type)
+wave_type = int(args.wave_type)
 
 class Topology(Topo):
 
@@ -99,23 +99,23 @@ def start():
     time.sleep(3)
     # The startup script for tcpdump should go here, so the network is instantiated 
     # and tcpdump can start listening and dumping the packets
-    system("../traffic/tcpdump_script.sh")
+    system("./tcpdump_script.sh")
 
     time.sleep(5)
     system("clear")
 
     if __name__ == "__main__":
-        if type == 0:
+        if wave_type == 0:
             CLI(net, script='../traffic/pcap_traffic.sh')
-        elif type == 1:
+        elif wave_type == 1:
             CLI(net, script='../traffic/sine_traffic.sh')
-        elif type == 2:
+        elif wave_type == 2:
             CLI(net, script='../traffic/triangular_traffic.sh')
-        elif type == 3:
+        elif wave_type == 3:
             CLI(net, script='../traffic/sawtooth_traffic.sh')
-        elif type == 4:
+        elif wave_type == 4:
             CLI(net, script='../traffic/square_traffic.sh')
-        elif type == 5:       
+        elif wave_type == 5:       
             CLI(net, script='../traffic/dsp_traffic.sh')
 
         # For debug

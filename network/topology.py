@@ -117,6 +117,7 @@ def start():
             CLI(net, script='../traffic/square_traffic.sh')
         elif wave_type == 5:       
             CLI(net, script='../traffic/dsp_traffic.sh')
+        print(wave_type)
 
         # For debug
         CLI(net)

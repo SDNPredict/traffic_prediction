@@ -112,11 +112,34 @@ After this passage, when the csv files have been generated, using Python we filt
 
 ### Prediction with Prophet
 
-Prophet requires as input one csv file with two columns, ds and y. The first one contains the timestamp and the second one the number of packets associated with that timestamp. The raw traffic data files are converted first into that form and then we applied mainly three strategies to preprocess the data.
+Prophet requires as input one csv file with two columns, ds and y. The first one contains the timestamp and the second one the number of packets associated with that timestamp. The raw traffic data files are converted first into that form and then we applied mainly three strategies (data augmentation, random noise injection and time stretching) to preprocess the data. This is an example of the csv, the floating points derive from the random noise applied to the signal.
 
-- **Data augmentation**
-- **Random noise injection**
-- **Time stretching**
+```csv
+ds,y
+2024-04-16 10:29:13,1.5580914740579144
+2024-04-16 13:15:53,7.003209013690214
+2024-04-16 16:02:33,1.519322426631933
+2024-04-16 18:49:13,4.740346761554502
+2024-04-16 21:35:53,3.9009595350685204
+2024-04-17 00:22:33,4.559584942830919
+2024-04-17 03:09:13,0.08581812250609566
+2024-04-17 05:55:53,-2.170272678557014
+2024-04-17 08:42:33,7.201491744590414
+2024-04-17 11:29:13,3.146381910001554
+2024-04-17 14:15:53,3.986018809234902
+2024-04-17 17:02:33,4.780617939800991
+2024-04-17 19:49:13,1.2549430332791238
+2024-04-17 22:35:53,6.976312298967413
+```
 
 The first demo is from sample waveforms: we generate the traffic following four patterns and we expect prophet to follow them pretty closely. The second one is from a real traffic scenario where we formed a topology consisting of 4 hosts and one switch, we generated traffic, captured it and them fed into prophet to analyze it. Generally a real case traffic scenario it is not particularily interesting to analyze because it has very little frequency content (only day-night and holidays fluctuations).
+
+This is the plot of the sinusoidal signal in input with all the preprocessing strategies applied.
+
+![Prophet Input](./img/prophet_input.png)
+
+This is the output of prophet, with also a plot of the traffic trends.
+
+![Prophet Output](./img/prophet_output.png)
+![Prophet Additional Plots](./img/prophet_trend_plot.png)
 

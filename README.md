@@ -5,6 +5,16 @@ This project explores the application of machine learning for traffic prediction
  - __Ryu__: A popular open-source SDN controller framework, providing the foundation for constructing your custom traffic management and data collection logic.  
  - __Prophet__ by Meta: A well-established Facebook (now Meta) open-source library for time series forecasting, ideal for predicting future network traffic patterns.  
 
+
+## Instructions to run the project
+
+To run the jupyter notebook for the prophet prediction `traffic_to_prediction.ipynb`, please install the required packages in `requirements.txt`.
+
+`pip install -r requirements.txt`
+
+Tested python version = 3.12.2.
+
+
 ### Project Objectives:
 
 Design and implement an SDN network using Mininet, mimicking a real-world or custom topology.  
